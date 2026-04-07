@@ -1,0 +1,81 @@
+from abc import ABC, abstractmethod
+
+class Payment(ABC):
+    def __init__(self, name):
+        self.name = name
+        self.original = 0
+        self.final = 0
+    
+    @abstractmethod
+    def pay(self, amt):
+        pass
+    
+    def generate_receipt(self):
+        print("-" * 20)
+        print("Name:", self.name)
+        print("Original Amount: ₹", self.original)
+        print("Final Amount Paid: ₹", round(self.final, 2))
+        print("-" * 20)
+
+class Credit(Payment):
+    def pay(self, amt):
+        self.original = amt
+        fee = amt * 0.02
+        gst = fee * 0.18
+        self.final = amt + fee + gst
+        print("\nCredit Card Payment Done!")
+        self.generate_receipt()
+
+class UPI(Payment):
+    def pay(self, amt):
+        self.original = amt
+        cashback = 50 if amt > 1000 else 0
+        self.final = amt - cashback
+        print("\nUPI Payment Done!")
+        if cashback > 0: print(f"Cashback Applied: ₹{cashback}")
+        self.generate_receipt()
+
+class PayPal(Payment):
+    def pay(self, amt):
+        self.original = amt
+        fee = (amt * 0.03) + 20
+        self.final = amt + fee
+        print("\nPayPal Payment Done!")
+        self.generate_receipt()
+
+class Wallet(Payment):
+    def __init__(self, name, balance):
+        super().__init__(name)
+        self.balance = balance
+    
+    def pay(self, amt):
+        self.original = amt
+        if amt > self.balance:
+            print(f"\nFail - Low Balance! (Available: ₹{self.balance})")
+        else:
+            self.balance -= amt
+            self.final = amt
+            print("\nWallet Payment Done!")
+            self.generate_receipt()
+            print("Remaining Balance: ₹", self.balance)
+
+name = input("Enter your name: ")
+print("\nChoose Payment Method:\n1. Credit Card\n2. UPI\n3. PayPal\n4. Wallet")
+
+choice = input("Enter choice (1-4): ")
+
+if choice == "1":
+    payment = Credit(name)
+elif choice == "2":
+    payment = UPI(name)
+elif choice == "3":
+    payment = PayPal(name)
+elif choice == "4":
+    bal = float(input("Enter wallet balance: ₹"))
+    payment = Wallet(name, bal)
+else:
+    print("Invalid choice!")
+    exit()
+
+amount = float(input("Enter amount to pay: ₹"))
+payment.pay(amount)
